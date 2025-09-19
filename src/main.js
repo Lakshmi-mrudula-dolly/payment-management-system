@@ -1,7 +1,7 @@
-import { createApp } from 'vue'
-import './style.css'
-//import App from './App.vue'
-import PaymentForm from './views/payments/PaymentForm.vue'
-import store from './store'
+import { createApp } from "vue";
+//import App from "./App.vue";
+import router from "./router";
+import store from "./store";
+import Dashboard from "./views/Dashboard.vue";
 
-createApp(PaymentForm).use(store).mount('#app')
+createApp(Dashboard).use(store).use(router).mount("#app");
