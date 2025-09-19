@@ -1,16 +1,8 @@
-<script>
-import PaymentList from './views/payments/PaymentList.vue';
-//import UserForm from './views/users/UserForm.vue';
-export default{
-  component:{
-    PaymentList
-  }
-}
-
-</script>
-
 <template>
-
-  <PaymentList/>
+    <RouterView />
 </template>
 
+<script setup>
+
+import { RouterView } from "vue-router";
+</script>

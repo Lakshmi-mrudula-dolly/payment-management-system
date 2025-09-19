@@ -1,49 +1,126 @@
 <template>
-    <div>
-  <form @submit.prevent="save">
-    <div>Payment Form</div>
-    <div>
-    <label>Amount : </label>
-    <input v-model="amount" type="number" placeholder="Amount" required />
-    </div>
-    <div>
-        <label>Type</label>
-    <select v-model="type">
-      <option value="INCOMING">Incoming</option>
-      <option value="OUTGOING">Outgoing</option>
-    </select>
-    </div>
-    <div>
-        <label>Category : </label>
-    <input v-model="category" placeholder="Category" />
-    </div>
-    <div>
-    <button type="submit">Save</button>
-    </div>
-  </form>
+  <div class="p-6 max-w-lg mx-auto bg-white shadow-md rounded-lg">
+    <h1 class="text-2xl font-bold mb-4 text-gray-800">
+      {{ isEdit ? "Edit Payment" : "Add Payment" }}
+    </h1>
+
+    <form @submit.prevent="submitForm" class="space-y-4">
+      <div>
+        <label class="block text-gray-600 mb-1">User</label>
+        <select
+          v-model="form.userId"
+          class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
+          required
+        >
+          <option value="">Select User</option>
+          <option v-for="user in users" :key="user.id" :value="user.id">
+            {{ user.name }}
+          </option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-gray-600 mb-1">Amount</label>
+        <input
+          v-model="form.amount"
+          type="number"
+          min="0"
+          class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
+          required
+        />
+      </div>
+
+      <div>
+        <label class="block text-gray-600 mb-1">Type</label>
+        <select
+          v-model="form.type"
+          class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
+          required
+        >
+          <option value="">Select Type</option>
+          <option value="INCOMING">INCOMING</option>
+          <option value="OUTGOING">OUTGOING</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-gray-600 mb-1">Status</label>
+        <select
+          v-model="form.status"
+          class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
+          required
+        >
+          <option value="">Select Status</option>
+          <option value="PENDING">PENDING</option>
+          <option value="COMPLETED">COMPLETED</option>
+          <option value="FAILED">FAILED</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-gray-600 mb-1">Category</label>
+        <input
+          v-model="form.category"
+          type="text"
+          class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
+          placeholder="e.g., Utilities, Salary"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+      >
+        {{ isEdit ? "Update Payment" : "Create Payment" }}
+      </button>
+    </form>
   </div>
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useStore } from "vuex";
+import { useRoute, useRouter } from "vue-router";
 
 export default {
   setup() {
-    const amount = ref("");
-    const type = ref("INCOMING");
-    const category = ref("");
     const store = useStore();
+    const route = useRoute();
+    const router = useRouter();
+    const isEdit = !!route.params.id;
 
-    const save = () => {
-      store.dispatch("payments/createPayment", {
-        amount: amount.value,
-        type: type.value,
-        category: category.value,
-      });
+    const form = ref({
+      userId: "",
+      amount: "",
+      type: "",
+      status: "",
+      category: "",
+    });
+
+    const users = ref([]);
+
+    onMounted(async () => {
+      await store.dispatch("users/fetchUsers");
+      users.value = store.state.users.all;
+
+      if (isEdit) {
+        const payment = store.state.payments.all.find(
+          (p) => p.id === parseInt(route.params.id)
+        );
+        if (payment) Object.assign(form.value, payment);
+      }
+    });
+
+    const submitForm = () => {
+      if (isEdit) {
+        store.dispatch("payments/updatePayment", form.value);
+      } else {
+        store.dispatch("payments/createPayment", form.value);
+      }
+      router.push("/payments");
     };
 
-    return { amount, type, category, save };
-  }
+    return { form, users, submitForm, isEdit };
+  },
 };
 </script>
