@@ -1,8 +1,9 @@
 <script>
-import UserForm from './views/users/UserForm.vue';
+import PaymentList from './views/payments/PaymentList.vue';
+//import UserForm from './views/users/UserForm.vue';
 export default{
   component:{
-    UserForm
+    PaymentList
   }
 }
 
@@ -10,6 +11,6 @@ export default{
 
 <template>
 
-  <UserForm/>
+  <PaymentList/>
 </template>
 
