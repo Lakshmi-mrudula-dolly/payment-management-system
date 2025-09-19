@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import './style.css'
-import App from './App.vue'
-import './assets/styles/tailwind.css'
+//import App from './App.vue'
+import UserList from './views/users/UserList.vue'
+import store from './store'
 
-createApp(App).mount('#app')
+createApp(UserList).use(store).mount('#app')
