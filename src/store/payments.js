@@ -7,7 +7,7 @@ function loadPayments() {
   // Add mock payments if storage is empty
   const today = new Date().toISOString().split("T")[0];
   const mockPayments = [
-    { id: 1, amount: 1000, type: "INCOMING", category: "Salary", status: "COMPLETED", date: "2024-01-01" },
+    { id: 1, amount: 1000, type: "OUTGOING", category: "Salary", status: "COMPLETED", date: "2024-01-01" },
     { id: 2, amount: 200, type: "OUTGOING", category: "Vendor Payment", status: "PENDING", date: "2025-02-25" },
     { id: 3, amount: 150, type: "OUTGOING", category: "Salary", status: "COMPLETED", date: "2025-09-01" },
     { id: 4, amount: 500, type: "INCOMING", category: "Client Invoice", status: "COMPLETED", date: "2025-07-07" },
