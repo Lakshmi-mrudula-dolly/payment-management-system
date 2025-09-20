@@ -63,10 +63,16 @@ export default {
 
     const submitForm = () => {
       if (emailError.value) return;
-      if (isEdit) store.dispatch("users/updateUser", form.value);
-      else store.dispatch("users/createUser", form.value);
+
+      if (isEdit) {
+        store.dispatch("users/updateUser", { ...form.value }); // ensure plain object
+      } else {
+        store.dispatch("users/createUser", { ...form.value }); // ensure plain object
+      }
+
       router.push("/users");
-    };
+};
+
 
     return { form, isEdit, submitForm, emailError };
   }

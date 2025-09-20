@@ -6,37 +6,19 @@
 
     <form @submit.prevent="submitForm" class="space-y-4">
       <div>
-        <label class="block text-gray-600 mb-1">User</label>
-        <select
-          v-model="form.userId"
-          class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
-          required
-        >
-          <option value="">Select User</option>
-          <option v-for="user in users" :key="user.id" :value="user.id">
-            {{ user.name }}
-          </option>
-        </select>
-      </div>
-
-      <div>
         <label class="block text-gray-600 mb-1">Amount</label>
         <input
           v-model="form.amount"
           type="number"
           min="0"
-          class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
+          class="w-full border rounded-lg p-2"
           required
         />
       </div>
 
       <div>
         <label class="block text-gray-600 mb-1">Type</label>
-        <select
-          v-model="form.type"
-          class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
-          required
-        >
+        <select v-model="form.type" class="w-full border rounded-lg p-2" required>
           <option value="">Select Type</option>
           <option value="INCOMING">INCOMING</option>
           <option value="OUTGOING">OUTGOING</option>
@@ -45,11 +27,7 @@
 
       <div>
         <label class="block text-gray-600 mb-1">Status</label>
-        <select
-          v-model="form.status"
-          class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
-          required
-        >
+        <select v-model="form.status" class="w-full border rounded-lg p-2" required>
           <option value="">Select Status</option>
           <option value="PENDING">PENDING</option>
           <option value="COMPLETED">COMPLETED</option>
@@ -62,8 +40,19 @@
         <input
           v-model="form.category"
           type="text"
-          class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
+          class="w-full border rounded-lg p-2"
           placeholder="e.g., Utilities, Salary"
+        />
+      </div>
+
+      <div>
+        <label class="block text-gray-600 mb-1">Date</label>
+        <input
+          v-model="form.date"
+          type="date"
+          class="w-full border rounded-lg p-2"
+          :max="today"
+          required
         />
       </div>
 
@@ -88,39 +77,40 @@ export default {
     const route = useRoute();
     const router = useRouter();
     const isEdit = !!route.params.id;
+    const today = new Date().toISOString().split("T")[0]; 
 
     const form = ref({
-      userId: "",
       amount: "",
       type: "",
       status: "",
       category: "",
+      date: ""
     });
 
-    const users = ref([]);
-
     onMounted(async () => {
-      await store.dispatch("users/fetchUsers");
-      users.value = store.state.users.all;
-
+      await store.dispatch("payments/fetchPayments");
       if (isEdit) {
-        const payment = store.state.payments.all.find(
-          (p) => p.id === parseInt(route.params.id)
+        const payment = store.state.payments.list.find(
+          p => p.id === parseInt(route.params.id)
         );
         if (payment) Object.assign(form.value, payment);
       }
     });
 
-    const submitForm = () => {
-      if (isEdit) {
-        store.dispatch("payments/updatePayment", form.value);
-      } else {
-        store.dispatch("payments/createPayment", form.value);
+    const submitForm = async () => {
+      try {
+        if (isEdit) {
+          await store.dispatch("payments/updatePayment", form.value);
+        } else {
+          await store.dispatch("payments/createPayment", form.value);
+        }
+        router.push("/payments");
+      } catch (err) {
+        alert(err.message);
       }
-      router.push("/payments");
     };
 
-    return { form, users, submitForm, isEdit };
-  },
+    return { form, submitForm, isEdit,today };
+  }
 };
 </script>

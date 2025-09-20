@@ -11,7 +11,8 @@ import UserForm from ".././views/users/UserForm.vue";
 import PaymentList from ".././views/payments/PaymentList.vue";
 import PaymentForm from ".././views/payments/PaymentForm.vue";
 import PaymentDetail from ".././views/payments/PaymentDetail.vue";
-
+import PaymentEdit from "../views/payments/PaymentEdit.vue"; 
+import UserEdit from "../views/users/UserEdit.vue";    
 const routes = [
   {
     path: "/",
@@ -23,6 +24,8 @@ const routes = [
       { path: "payments", name: "PaymentList", component: PaymentList },
       { path: "payments/new", name: "PaymentForm", component: PaymentForm },
       { path: "payments/:id", name: "PaymentDetail", component: PaymentDetail, props: true },
+      { path: "payments/:id/edit", name: "PaymentEdit", component: PaymentEdit, props: true },
+      { path: "users/:id/edit", name: "UserEdit", component: UserEdit, props: true }
     ],
   },
 ];

@@ -28,7 +28,7 @@
       <div class="bg-white shadow-md rounded-lg p-5 flex flex-col justify-between hover:shadow-xl transition-shadow duration-300">
         <div>
           <p class="text-gray-500 font-semibold">Total Payments</p>
-          <p class="text-3xl font-bold text-gray-800 mt-2">{{ filteredPayments?.length || 0 }}</p>
+          <p class="text-3xl font-bold text-gray-800 mt-2">{{ filteredPayments.length }}</p>
         </div>
       </div>
 
@@ -54,58 +54,74 @@
       </div>
     </div>
 
-    <!-- Charts Section 
+    <!-- Charts Section -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <PaymentStatusChart :filters="filters" class="h-80" />
-      <PaymentsByDateChart :filters="filters" class="h-80" />
-    </div>-->
+      <div>
+     <PaymentStatusChart :filters="chartFilters" class="h-72" /> 
+     </div>
+     <div>
+      <PaymentsByDateChart :filters="chartFilters" class="h-96" /> 
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { computed, onMounted, ref } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
-import PaymentStatusChart from ".././components/PaymentStatusChart.vue";
-import PaymentsByDateChart from ".././components/PaymentsByDateChart.vue";
+import PaymentStatusChart from "../components/PaymentStatusChart.vue";
+import PaymentsByDateChart from "../components/PaymentsByDateChart.vue";
 
 export default {
-// components: { PaymentStatusChart, PaymentsByDateChart },
+  components: { PaymentStatusChart, PaymentsByDateChart },
   setup() {
     const store = useStore();
+
+    // Filters
     const selectedCategory = ref("");
     const startDate = ref("");
     const endDate = ref("");
 
     onMounted(() => {
-      store.dispatch("users/fetchUsers");
       store.dispatch("payments/fetchPayments");
+      store.dispatch("users/fetchUsers");
     });
 
+    // Unique categories
     const categories = computed(() =>
       [...new Set(store.state.payments.list.map(p => p.category))].filter(Boolean)
     );
 
-    const filters = computed(() => ({
+    // Chart filters (pass to child components)
+    const chartFilters = computed(() => ({
       category: selectedCategory.value,
       startDate: startDate.value,
       endDate: endDate.value
     }));
 
+    // Filtered payments (reactive)
     const filteredPayments = computed(() => {
-      return store.state.payments.list.filter(p => {
-        const matchCategory = !filters.value.category || p.category === filters.value.category;
-        const matchStart = !filters.value.startDate || p.date >= filters.value.startDate;
-        const matchEnd = !filters.value.endDate || p.date <= filters.value.endDate;
-        return matchCategory && matchStart && matchEnd;
-      });
+    return store.state.payments.list.filter(p => {
+      const paymentDate = new Date(p.date); // convert string → Date
+      const matchCategory = !selectedCategory.value || p.category === selectedCategory.value;
+      const matchStart = !startDate.value || paymentDate >= new Date(startDate.value);
+      const matchEnd = !endDate.value || paymentDate <= new Date(endDate.value);
+      return matchCategory && matchStart && matchEnd;
     });
+  });
 
+
+    // Summary computations
     const totalIncoming = computed(() =>
-      filteredPayments.value.filter(p => p.type === "INCOMING").reduce((sum, p) => sum + p.amount, 0)
+      filteredPayments.value
+        .filter(p => p.type === "INCOMING")
+        .reduce((sum, p) => sum + Number(p.amount), 0)
     );
 
     const totalOutgoing = computed(() =>
-      filteredPayments.value.filter(p => p.type === "OUTGOING").reduce((sum, p) => sum + p.amount, 0)
+      filteredPayments.value
+        .filter(p => p.type === "OUTGOING")
+        .reduce((sum, p) => sum + Number(p.amount), 0)
     );
 
     const pendingPayments = computed(() =>
@@ -116,12 +132,12 @@ export default {
       selectedCategory,
       startDate,
       endDate,
-      filters,
       filteredPayments,
       totalIncoming,
       totalOutgoing,
       pendingPayments,
-      categories
+      categories,
+      chartFilters
     };
   }
 };

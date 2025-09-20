@@ -13,27 +13,57 @@
       <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
         <thead class="bg-gray-100">
           <tr>
-            <th class="py-2 px-4 text-left text-gray-600">ID</th>
-            <th class="py-2 px-4 text-left text-gray-600">User</th>
-            <th class="py-2 px-4 text-left text-gray-600">Amount</th>
-            <th class="py-2 px-4 text-left text-gray-600">Type</th>
-            <th class="py-2 px-4 text-left text-gray-600">Status</th>
-            <th class="py-2 px-4 text-left text-gray-600">Category</th>
-            <th class="py-2 px-4 text-left text-gray-600">Actions</th>
+            <th
+              class="py-2 px-4 text-left cursor-pointer"
+              @click="sortBy('id')"
+            >
+              ID <span>{{ sortSymbol('id') }}</span>
+            </th>
+            <th
+              class="py-2 px-4 text-left cursor-pointer"
+              @click="sortBy('amount')"
+            >
+              Amount <span>{{ sortSymbol('amount') }}</span>
+            </th>
+            <th
+              class="py-2 px-4 text-left cursor-pointer"
+              @click="sortBy('type')"
+            >
+              Type <span>{{ sortSymbol('type') }}</span>
+            </th>
+            <th
+              class="py-2 px-4 text-left cursor-pointer"
+              @click="sortBy('status')"
+            >
+              Status <span>{{ sortSymbol('status') }}</span>
+            </th>
+            <th
+              class="py-2 px-4 text-left cursor-pointer"
+              @click="sortBy('category')"
+            >
+              Category <span>{{ sortSymbol('category') }}</span>
+            </th>
+            <th
+              class="py-2 px-4 text-left cursor-pointer"
+              @click="sortBy('date')"
+            >
+              Payment Date <span>{{ sortSymbol('date') }}</span>
+            </th>
+            <th class="py-2 px-4 text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="payment in payments"
+            v-for="payment in sortedPayments"
             :key="payment.id"
             class="hover:bg-gray-50 border-b"
           >
             <td class="py-2 px-4">{{ payment.id }}</td>
-            <td class="py-2 px-4">{{ payment.userName }}</td>
             <td class="py-2 px-4">{{ payment.amount }}</td>
             <td class="py-2 px-4">{{ payment.type }}</td>
             <td class="py-2 px-4">{{ payment.status }}</td>
             <td class="py-2 px-4">{{ payment.category }}</td>
+            <td class="py-2 px-4">{{ payment.date }}</td>
             <td class="py-2 px-4 space-x-2">
               <router-link
                 :to="`/payments/${payment.id}`"
@@ -61,7 +91,7 @@
 </template>
 
 <script>
-import { computed, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 
 export default {
@@ -72,15 +102,47 @@ export default {
       store.dispatch("payments/fetchPayments");
     });
 
-    const payments = computed(() =>
-      store.state.payments.all.map((p) => ({
-        ...p,
-        userName:
-          store.state.users.all.find((u) => u.id === p.userId)?.name || "N/A",
-      }))
-    );
+    const payments = computed(() => store.state.payments.list);
 
-    return { payments };
+    const sortField = ref("");
+    const sortAsc = ref(true);
+
+    const sortBy = (field) => {
+      if (sortField.value === field) {
+        sortAsc.value = !sortAsc.value; // toggle order
+      } else {
+        sortField.value = field;
+        sortAsc.value = true;
+      }
+    };
+
+    const sortSymbol = (field) => {
+      if (sortField.value !== field) return "";
+      return sortAsc.value ? "▲" : "▼";
+    };
+
+    const sortedPayments = computed(() => {
+      if (!sortField.value) return payments.value;
+
+      return [...payments.value].sort((a, b) => {
+        const aVal = a[sortField.value];
+        const bVal = b[sortField.value];
+
+        // handle numbers
+        if (typeof aVal === "number" && typeof bVal === "number") {
+          return sortAsc.value ? aVal - bVal : bVal - aVal;
+        }
+
+        // handle strings and dates
+        const aStr = String(aVal).toLowerCase();
+        const bStr = String(bVal).toLowerCase();
+        if (aStr < bStr) return sortAsc.value ? -1 : 1;
+        if (aStr > bStr) return sortAsc.value ? 1 : -1;
+        return 0;
+      });
+    });
+
+    return { payments, sortedPayments, sortBy, sortSymbol };
   },
 };
 </script>

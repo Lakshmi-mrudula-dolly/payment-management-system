@@ -1,50 +1,64 @@
-<script setup>
+<template>
+  <Doughnut v-if="chartData" :data="chartData" :options="options" />
+</template>
+
+<script>
 import { Doughnut } from "vue-chartjs";
-import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-} from "chart.js";
+import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement } from "chart.js";
 import { computed } from "vue";
 import { useStore } from "vuex";
-import { defineProps } from "vue";
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
-const props = defineProps({ filters: Object });
-const store = useStore();
+export default {
+  name: "PaymentStatusChart",
+  components: { Doughnut },
+  props: {
+    filters: { type: Object, required: true }
+  },
+  setup(props) {
+    const store = useStore();
 
-const filteredPayments = computed(() => {
-  return store.state.payments.all.filter(p => {
-    const matchCategory = !props.filters.category || p.category === props.filters.category;
-    const matchStart = !props.filters.startDate || p.date >= props.filters.startDate;
-    const matchEnd = !props.filters.endDate || p.date <= props.filters.endDate;
-    return matchCategory && matchStart && matchEnd;
-  });
-});
+    const filteredPayments = computed(() => {
+      return store.state.payments.list.filter(p => {
+        const paymentDate = new Date(p.date);
+        const matchCategory = !props.filters.category || p.category === props.filters.category;
+        const matchStart = !props.filters.startDate || paymentDate >= new Date(props.filters.startDate);
+        const matchEnd = !props.filters.endDate || paymentDate <= new Date(props.filters.endDate);
+        return matchCategory && matchStart && matchEnd;
+      });
+    });
 
-const chartData = computed(() => {
-  const statuses = ["COMPLETED", "PENDING", "FAILED"];
-  const counts = statuses.map(
-    status => filteredPayments.value.filter(p => p.status === status).length
-  );
+    const chartData = computed(() => {
+      const statusCounts = {
+        COMPLETED: 0,
+        PENDING: 0,
+        FAILED: 0
+      };
+      filteredPayments.value.forEach(p => {
+        if (statusCounts[p.status] !== undefined) statusCounts[p.status]++;
+      });
 
-  return {
-    labels: statuses,
-    datasets: [
-      {
-        label: "Payments",
-        backgroundColor: ["#10B981", "#F59E0B", "#EF4444"],
-        data: counts
+      return {
+        labels: Object.keys(statusCounts),
+        datasets: [
+          {
+            data: Object.values(statusCounts),
+            backgroundColor: ["#16a34a", "#eab308", "#dc2626"]
+          }
+        ]
+      };
+    });
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false, 
+      plugins: {
+        legend: { position: "bottom" }
       }
-    ]
-  };
-});
+    };
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false
+    return { chartData, options };
+  }
 };
 </script>

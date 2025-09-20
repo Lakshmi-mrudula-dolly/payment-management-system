@@ -1,6 +1,11 @@
 <template>
-  <div>
-    <!-- Mobile Top Bar -->
+  <div
+    :class="[
+      'bg-gray-800 text-white flex flex-col h-screen md:w-64 fixed md:relative transition-transform duration-300 z-50',
+      isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+    ]"
+  >
+    <!-- Mobile Header -->
     <div class="md:hidden flex items-center justify-between bg-gray-800 text-white p-4">
       <span class="font-bold text-lg">💳 Fintech</span>
       <button @click="isOpen = !isOpen">
@@ -29,54 +34,46 @@
       </button>
     </div>
 
-    <!-- Sidebar -->
-    <div
-      :class="[
-        'bg-gray-800 text-white flex flex-col h-screen md:h-auto md:w-64 fixed md:relative transition-transform duration-300 z-50',
-        isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-      ]"
-    >
-      <div class="p-4 text-2xl font-bold border-b border-gray-700 md:hidden">
-        💳 Fintech Admin
-      </div>
-      <nav class="flex-1 p-4 space-y-2">
-        <RouterLink
-          to="/dashboard"
-          class="block py-2 px-3 rounded hover:bg-gray-700"
-          active-class="bg-gray-700"
-          @click="isOpen = false"
-        >
-          Dashboard
-        </RouterLink>
-        <RouterLink
-          to="/users"
-          class="block py-2 px-3 rounded hover:bg-gray-700"
-          active-class="bg-gray-700"
-          @click="isOpen = false"
-        >
-          Users
-        </RouterLink>
-        <RouterLink
-          to="/payments"
-          class="block py-2 px-3 rounded hover:bg-gray-700"
-          active-class="bg-gray-700"
-          @click="isOpen = false"
-        >
-          Payments
-        </RouterLink>
-      </nav>
-      <div class="p-4 border-t border-gray-700 text-sm text-gray-400">
-        © 2025 Fintech
-      </div>
-    </div>
+    <!-- Links -->
+    <nav class="flex-1 p-4 space-y-2">
+      <RouterLink
+        to="/"
+        class="block py-2 px-3 rounded hover:bg-gray-700"
+        active-class="bg-gray-700"
+        @click="isOpen = false"
+      >
+        Dashboard
+      </RouterLink>
+      <RouterLink
+        to="/users"
+        class="block py-2 px-3 rounded hover:bg-gray-700"
+        active-class="bg-gray-700"
+        @click="isOpen = false"
+      >
+        Users
+      </RouterLink>
+      <RouterLink
+        to="/payments"
+        class="block py-2 px-3 rounded hover:bg-gray-700"
+        active-class="bg-gray-700"
+        @click="isOpen = false"
+      >
+        Payments
+      </RouterLink>
+    </nav>
 
-    <!-- Overlay when sidebar is open on mobile -->
-    <div
-      v-if="isOpen"
-      @click="isOpen = false"
-      class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-    ></div>
+    <!-- Footer -->
+    <div class="p-4 border-t border-gray-700 text-sm text-gray-400">
+      © 2025 Fintech
+    </div>
   </div>
+
+  <!-- Overlay for mobile -->
+  <div
+    v-if="isOpen"
+    @click="isOpen = false"
+    class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+  ></div>
 </template>
 
 <script setup>
